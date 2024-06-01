@@ -102,6 +102,12 @@ public class GestorActualizaVinos {
 	
 	public List<Vino> actualizarVinosBodega(List<Vino> listaObtenida){
 		
+		Iterable<Vino> listaActual = vinoRepository.findAll();
+		
+		for (Vino vino : listaActual) {
+			//if(vino.)
+		}
+		
 		return null;
 	}
 	
