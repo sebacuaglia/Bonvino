@@ -1,6 +1,9 @@
 package ar.com.bonvino.model;
 
-public class Madrinaje {
+import javax.persistence.Entity;
+
+@Entity
+public class Madrinaje extends ObjetoDB{
 
 	private String descripcion;
 	private String nombre;

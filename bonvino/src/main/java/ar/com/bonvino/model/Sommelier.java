@@ -2,7 +2,10 @@ package ar.com.bonvino.model;
 
 import java.util.Date;
 
-public class Sommelier {
+import javax.persistence.Entity;
+
+@Entity
+public class Sommelier extends ObjetoDB{
 
 	private String nombre;
 	private Date fechaValidacion;
