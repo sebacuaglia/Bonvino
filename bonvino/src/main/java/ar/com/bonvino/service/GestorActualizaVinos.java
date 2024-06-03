@@ -2,15 +2,22 @@ package ar.com.bonvino.service;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import ar.com.bonvino.model.Bodega;
+import ar.com.bonvino.model.TipoUva;
+import ar.com.bonvino.model.Varietal;
 import ar.com.bonvino.model.Vino;
+import ar.com.bonvino.model.VinosActualizar;
 import ar.com.bonvino.repository.BodegaRepository;
+import ar.com.bonvino.repository.TipoUvaRepository;
+import ar.com.bonvino.repository.VarietalRepository;
 import ar.com.bonvino.repository.VinoRepository;
 
 @Service
@@ -21,6 +28,9 @@ public class GestorActualizaVinos {
 	
 	@Autowired
 	private VinoRepository vinoRepository; 
+	
+	@Autowired
+	private TipoUvaRepository tipoUvaRepository; 
 	
 	@Autowired
 	private ApplicationEventPublisher applicationEventPublisher;
@@ -61,15 +71,15 @@ public class GestorActualizaVinos {
 		return bodegasConActualizacion;
 	}
 	
-	public List<Vino> tomarSeleccionBodega(Integer bodegasId) {
+	public HashMap<String,List<Vino>> tomarSeleccionBodega(Integer bodegasId) {
 		seleccionarBodega(bodegasId);
 		
 		//realizo la conexion
 		realizarConexionConSistemaBodega();
 		
-		List<Vino> listaObtenida = obtenerActualizacionesBodegaSeleccionada(bodegasSeleccionada);
+		List<VinosActualizar> listaObtenida = obtenerActualizacionesBodegaSeleccionada(bodegasSeleccionada);
 		
-		List<Vino> listaActualizada = actualizarVinosBodega(listaObtenida);
+		HashMap<String,List<Vino>> listaActualizada = actualizarVinosBodega(listaObtenida);
 		
 		//esto hace que se ejecute un metodo asyncrono(paralela a la ejecucion actual) para enviar las notificaciones
 		applicationEventPublisher.publishEvent(bodegasId);
@@ -96,19 +106,85 @@ public class GestorActualizaVinos {
 	}
 	
 	
-	public List<Vino> obtenerActualizacionesBodegaSeleccionada(Bodega bodega) {
+	public List<VinosActualizar> obtenerActualizacionesBodegaSeleccionada(Bodega bodega) {
 		return conexion.obtenerActualizacionesBodegaSeleccionada(bodega);
 	}
 	
-	public List<Vino> actualizarVinosBodega(List<Vino> listaObtenida){
+	public HashMap<String,List<Vino>> actualizarVinosBodega(List<VinosActualizar> listaObtenida){
+		HashMap<String,List<Vino>> result = new HashMap<String, List<Vino>>();
 		
-		Iterable<Vino> listaActual = vinoRepository.findAll();
+		List<Vino> listaActualizada= new ArrayList<Vino>();
+		List<Vino> listaNuevos= new ArrayList<Vino>();
+		List<VinosActualizar> listaCrearNuevos= new ArrayList<VinosActualizar>();
 		
-		for (Vino vino : listaActual) {
-			//if(vino.)
+		Iterable<Vino> listaVinosActuales = ObtenerListaVinosBodega();
+		
+		//recorro los vinos a actualizar
+		for (VinosActualizar vinoExterno : listaObtenida) {
+			boolean seleccionActualizacion = false;
+			for (Vino vino : listaVinosActuales) {
+				
+				//buscamos el vino obtenido externamente coincide con el que tenemos guardado en base de datos.
+				if( vino.esVinoSeleccionado(vinoExterno) ) {
+					seleccionActualizacion = true;
+					
+					//verificamos la fechas de actualizacion que poseen si son iguales, entonces no debe actualizarce
+					if ( ! vino.esFechaActualizacionIguales(vinoExterno.getFechaActualizacion())) {
+						vino.actualizarDatos(vinoExterno);
+						listaActualizada.add(
+							//actualizar base de datos
+							vinoRepository.save(vino)
+						);
+						break;
+					}
+				}
+			}
+			
+			//si esta bandera no es true quiere decir que el vino buscado no fue encontrado en nuestra base de datos y debe crearse
+			if ( !seleccionActualizacion ) {
+				listaCrearNuevos.add(vinoExterno);
+			}
 		}
 		
-		return null;
+		//de todos los vinos que no se actualizaron, deben crearse
+		for (VinosActualizar vinoCrear : listaCrearNuevos) {
+			//busco la lista de tipos de uva
+			Iterable<TipoUva> tipoUvas = buscarTipoDeUva(); 
+			
+			listaNuevos.add(crearVino(vinoCrear,(List<TipoUva>) tipoUvas));
+			
+		}
+		
+		return result;
+	}
+
+	private Vino crearVino(VinosActualizar vinoCrear, List<TipoUva> tipoUvas) {
+		Vino nuevoVino =  new Vino(vinoCrear.getNombre(), 
+				vinoCrear.getAñada(),
+				vinoCrear.getFechaActualizacion(),
+				vinoCrear.getNotaDeCataBodega(), 
+				vinoCrear.getPrecioARS(), 
+				vinoCrear.getImagenEtiqueta(),
+				bodegasSeleccionada, 
+				vinoCrear.getVarietalactualizar(), 
+				tipoUvas);
+		return nuevoVino;
+	}
+
+	private Iterable<TipoUva> buscarTipoDeUva() {
+		return tipoUvaRepository.findAll();
+	}
+
+	private Iterable<Vino> ObtenerListaVinosBodega() {
+		List<Vino> result = new ArrayList<Vino>();
+		
+		//recorro todos los vinos preguntando si es de la bodega seleccionada
+		for (Vino vino : vinoRepository.findAll() ) {
+			if(vino.esDeBodega(bodegasSeleccionada)) {
+				result.add(vino);
+			}
+		}
+		return result;
 	}
 	
 }

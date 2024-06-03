@@ -1,5 +1,7 @@
 package ar.com.bonvino.model;
 
+import java.util.List;
+
 import javax.persistence.Entity;
 import javax.persistence.OneToOne;
 
@@ -13,12 +15,22 @@ public class Varietal extends ObjetoDB{
     @OneToOne
     private TipoUva tipoUva;
 
-    public Varietal(String descripcion, float porcentajeComposicion){
+    public Varietal(String descripcion, float porcentajeComposicion, String tipoUvaNombre, List<TipoUva> tiposUvas){
         this.descripcion = descripcion;
         this.porcentajeComposicion = porcentajeComposicion;
+        this.tipoUva = obtenerTipoUva(tipoUvaNombre, tiposUvas);
     }
 
-    public String getDescripcion(){
+    private TipoUva obtenerTipoUva(String tipoUvaNombre, List<TipoUva> tiposUvas) {
+		for (TipoUva tipoUva : tiposUvas) {
+			if (tipoUva.esTipoUva(tipoUvaNombre)) {
+				return tipoUva;
+			}
+		}
+		return new TipoUva(tipoUvaNombre, null);
+	}
+
+	public String getDescripcion(){
         return descripcion;
     }
 
