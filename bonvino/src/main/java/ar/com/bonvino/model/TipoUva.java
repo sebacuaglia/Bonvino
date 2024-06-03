@@ -29,4 +29,10 @@ public class TipoUva extends ObjetoDB{
     public void setNombre(String nombre){
         this.nombre = nombre;
     }
+    
+    
+    public boolean esTipoUva(String nombre) {
+    	return (this.nombre==nombre);
+    }
+    
 }

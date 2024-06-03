@@ -3,9 +3,10 @@ package ar.com.bonvino.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import ar.com.bonvino.model.Bodega;
+import ar.com.bonvino.model.Varietal;
 
 @Repository
-public interface BodegaRepository extends JpaRepository<Bodega, Long>  {
+public interface VarietalRepository  extends JpaRepository<Varietal, Long> {
+	
 
 }

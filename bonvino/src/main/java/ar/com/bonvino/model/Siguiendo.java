@@ -65,14 +65,31 @@ public class Siguiendo{
 		this.bodega = bodega;
 	}
 
-	public Sommelier getSomelier() {
+	public Sommelier getSommelier() {
 		return sommelier;
 	}
 
-	public void setSomelier(Sommelier sommelier) { //RELACION MUTUAMENTE EXCLUYENTE
+	public void setSommelier(Sommelier sommelier) { //RELACION MUTUAMENTE EXCLUYENTE
 		if (bodega != null || enofilo != null) {
             throw new IllegalStateException("No se puede asignar un sommelier cuando ya hay una bodega o enofilo asignado.");
         }
 		this.sommelier = sommelier;
+	}
+	
+	public boolean sosDeBodega() {
+		return bodega != null;
+	}
+	
+	public boolean sosDeSommelier() {
+		return sommelier != null;
+	}
+
+	public boolean sosDeAmigo() {
+		return enofilo != null;
+	}
+
+	public boolean esBodega(Bodega bodega) {
+		
+		return (this.bodega.equals(bodega));
 	}
 }
