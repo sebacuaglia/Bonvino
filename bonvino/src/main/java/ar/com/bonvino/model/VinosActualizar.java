@@ -4,14 +4,16 @@ import java.util.Date;
 import java.util.List;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 
 @Entity
-public class VinosActualizar {
+public class VinosActualizar extends ObjetoDB{
 
-private Integer añada;
+	@Column(name = "aniada")
+	private Integer añada;
     
     
     private Date fechaActualizacion;

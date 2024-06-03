@@ -6,6 +6,7 @@ import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
 
@@ -23,7 +24,7 @@ public class Enofilo extends ObjetoDB {
 	@OneToOne
 	private Usuario usuario;
 	
-	@ManyToOne(cascade = CascadeType.ALL)
+	@OneToMany(cascade = CascadeType.ALL)
 	private List<Vino> vino; //VINOS FAVORITOS
 	
 	@ManyToMany(cascade = CascadeType.ALL)
