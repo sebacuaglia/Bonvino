@@ -19,7 +19,7 @@ public class Enofilo extends ObjetoDB {
 	private String nombre;
 	
 	
-	private String imagenPrefil;
+	private String imagenPerfil;
 	
 	@OneToOne
 	private Usuario usuario;
@@ -46,12 +46,12 @@ public class Enofilo extends ObjetoDB {
 		this.nombre = nombre;
 	}
 
-	public String getImagenPrefil() {
-		return imagenPrefil;
+	public String getImagenPerfil() {
+		return imagenPerfil;
 	}
 
-	public void setImagenPrefil(String imagenPrefil) {
-		this.imagenPrefil = imagenPrefil;
+	public void setImagenPerfil(String imagenPrefil) {
+		this.imagenPerfil = imagenPrefil;
 	}
 
 	public Usuario getUsuario() {
