@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -16,14 +15,12 @@ import ar.com.bonvino.model.Bodega;
 import ar.com.bonvino.model.Enofilo;
 import ar.com.bonvino.model.Siguiendo;
 import ar.com.bonvino.model.TipoUva;
-import ar.com.bonvino.model.Varietal;
 import ar.com.bonvino.model.Vino;
 import ar.com.bonvino.model.VinosActualizar;
 import ar.com.bonvino.model.utils.EventBodega;
 import ar.com.bonvino.repository.BodegaRepository;
 import ar.com.bonvino.repository.EnofiloRepository;
 import ar.com.bonvino.repository.TipoUvaRepository;
-import ar.com.bonvino.repository.VarietalRepository;
 import ar.com.bonvino.repository.VinoRepository;
 
 @Service
