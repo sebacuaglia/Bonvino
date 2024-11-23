@@ -142,7 +142,7 @@ public class Vino extends ObjetoDB {
 		return result;
 	}
 
-	public boolean esDeBodega(Bodega bodega) {
+	public boolean perteneceABodegaSeleccionada(Bodega bodega) {
     	//ver si funciona la camparacio
     	return (this.bodega.equals(bodega));
     }

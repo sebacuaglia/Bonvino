@@ -54,5 +54,8 @@ public class Varietal extends ObjetoDB{
 		this.tipoUva = tipoUva;
 	}
     
+	public boolean esDeTipoUva(String tipoUvaNombre) {
+		return this.tipoUva.getNombre().equals(tipoUvaNombre);
+	}
     
 }

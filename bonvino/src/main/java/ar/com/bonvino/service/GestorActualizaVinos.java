@@ -1,5 +1,7 @@
 package ar.com.bonvino.service;
 
+import static org.hamcrest.CoreMatchers.nullValue;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -15,12 +17,14 @@ import ar.com.bonvino.model.Bodega;
 import ar.com.bonvino.model.Enofilo;
 import ar.com.bonvino.model.Siguiendo;
 import ar.com.bonvino.model.TipoUva;
+import ar.com.bonvino.model.Varietal;
 import ar.com.bonvino.model.Vino;
 import ar.com.bonvino.model.VinosActualizar;
 import ar.com.bonvino.model.utils.EventBodega;
 import ar.com.bonvino.repository.BodegaRepository;
 import ar.com.bonvino.repository.EnofiloRepository;
 import ar.com.bonvino.repository.TipoUvaRepository;
+import ar.com.bonvino.repository.VarietalRepository;
 import ar.com.bonvino.repository.VinoRepository;
 
 @Service
@@ -34,6 +38,9 @@ public class GestorActualizaVinos {
 	
 	@Autowired
 	private TipoUvaRepository tipoUvaRepository; 
+	
+	@Autowired
+	private VarietalRepository varietalRepository;
 	
 	@Autowired
 	private EnofiloRepository enofiloRepository;
@@ -130,6 +137,7 @@ public class GestorActualizaVinos {
 		List<Vino> listaNuevos= new ArrayList<Vino>();
 		List<VinosActualizar> listaCrearNuevos= new ArrayList<VinosActualizar>();
 		
+		//Obtener Lista de Vinos de la bodega seleccionada
 		Iterable<Vino> listaVinosActuales = ObtenerListaVinosBodega();
 		
 		//recorro los vinos a actualizar
@@ -161,21 +169,29 @@ public class GestorActualizaVinos {
 		
 		//de todos los vinos que no se actualizaron, deben crearse y los agregamos a la lista de creados
 		for (VinosActualizar vinoCrear : listaCrearNuevos) {
-			//busco la lista de tipos de uva
-			Iterable<TipoUva> tipoUvas = buscarTipoDeUva(); 
+						
+			listaNuevos.add(
+					crearVino(vinoCrear)
+				);
 			
-			listaNuevos.add(crearVino(vinoCrear,(List<TipoUva>) tipoUvas));
 			
 		}
 		
 		//guardamos las actualizaciones y las devolvemos al front
 		result.put(Constantes.CREADOS, listaNuevos);
-		result.put(Constantes.CREADOS, listaNuevos);
+		result.put(Constantes.ACTUALIZARDOS, listaActualizada);
 		
 		return result;
 	}
 
-	private Vino crearVino(VinosActualizar vinoCrear, List<TipoUva> tipoUvas) {
+	private Vino crearVino(VinosActualizar vinoCrear) {
+		//busco la lista de tipos de uva
+		List<TipoUva> tiposUvas = tipoUvaRepository.findAll();
+		
+		//filtro los tipos de uva que necesito
+		List<TipoUva> tipouva = obtenerTipoDeUva(vinoCrear,tiposUvas);
+		
+		//creo el vino
 		Vino nuevoVino =  new Vino(vinoCrear.getNombre(), 
 				vinoCrear.getAñada(),
 				vinoCrear.getFechaActualizacion(),
@@ -184,13 +200,24 @@ public class GestorActualizaVinos {
 				vinoCrear.getImagenEtiqueta(),
 				bodegasSeleccionada, 
 				vinoCrear.getVarietalactualizar(), 
-				tipoUvas);
+				tipouva);
 		
 		return vinoRepository.save(nuevoVino);
 	}
 
-	private Iterable<TipoUva> buscarTipoDeUva() {
-		return tipoUvaRepository.findAll();
+	//obtengo el o los tipos de uva que necesito para crear el vino.
+	private List<TipoUva> obtenerTipoDeUva(VinosActualizar vinoCrear, List<TipoUva> tiposUvas) {
+		List<TipoUva> result = new ArrayList<TipoUva>();
+
+		//recorro los tipos de uva y varietales
+		for (TipoUva uva : tiposUvas) {
+			for (Varietal varietal : vinoCrear.getVarietalactualizar()) {
+				if(varietal.esDeTipoUva(uva.getNombre())) {
+					result.add(varietal.getTipoUva());
+				}
+			}
+		}
+		return result;
 	}
 
 	private Iterable<Vino> ObtenerListaVinosBodega() {
@@ -198,7 +225,7 @@ public class GestorActualizaVinos {
 		
 		//recorro todos los vinos preguntando si es de la bodega seleccionada
 		for (Vino vino : vinoRepository.findAll() ) {
-			if(vino.esDeBodega(bodegasSeleccionada)) {
+			if(vino.perteneceABodegaSeleccionada(bodegasSeleccionada)) {
 				result.add(vino);
 			}
 		}
