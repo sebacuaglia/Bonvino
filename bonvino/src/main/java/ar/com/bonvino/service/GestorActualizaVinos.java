@@ -28,7 +28,7 @@ import ar.com.bonvino.repository.VarietalRepository;
 import ar.com.bonvino.repository.VinoRepository;
 
 @Service
-public class GestorActualizaVinos {
+public class GestorActualizaVinos implements ISujetoNotificacionEnofilo{
 
 	@Autowired
 	private BodegaRepository bodegaRepository; 
@@ -55,11 +55,18 @@ public class GestorActualizaVinos {
 	
 	private InterfaceAPIBodega conexion;
 	
-	private InterfaceNotificacionPush notificacionPush;
+	//private InterfaceNotificacionPush notificacionPush;
 	
-	public GestorActualizaVinos(InterfaceAPIBodega conexion, InterfaceNotificacionPush notificacionPush){
+	private IObservador observador;
+	
+	private List<Vino> listaNuevos= new ArrayList<Vino>();
+	private List<Vino> listaActualizada= new ArrayList<Vino>();
+	private List<VinosActualizar> listaCrearNuevos= new ArrayList<VinosActualizar>();
+	private List<Enofilo> listaSeguidores= new ArrayList<Enofilo>();
+	
+	public GestorActualizaVinos(InterfaceAPIBodega conexion /*,InterfaceNotificacionPush notificacionPush*/){
 		this.conexion = conexion;
-		this.notificacionPush = notificacionPush;
+		//this.notificacionPush = notificacionPush;
 	}
 	
 	public List<Bodega> opcionImportarActualizacionVinoBodegas() {
@@ -133,9 +140,6 @@ public class GestorActualizaVinos {
 	public HashMap<String,List<Vino>> actualizarVinosBodega(List<VinosActualizar> listaObtenida){
 		HashMap<String,List<Vino>> result = new HashMap<String, List<Vino>>();
 		
-		List<Vino> listaActualizada= new ArrayList<Vino>();
-		List<Vino> listaNuevos= new ArrayList<Vino>();
-		List<VinosActualizar> listaCrearNuevos= new ArrayList<VinosActualizar>();
 		
 		//Obtener Lista de Vinos de la bodega seleccionada
 		Iterable<Vino> listaVinosActuales = ObtenerListaVinosBodega();
@@ -241,20 +245,57 @@ public class GestorActualizaVinos {
 	@EventListener
 	public void eventoNotificacion(EventBodega event) {
 		Iterable<Enofilo> listaSeguidores = obtenerListaEnofilos();
-		for (Enofilo enofilo : listaSeguidores) {
-			for (Siguiendo siguiendo : enofilo.getSeguido()) {
-				if ( siguiendo.sosDeBodega() ) {
-					if (siguiendo.esBodega(event.getBodega())) {
-						notificacionPush.enviarNotificacionPush(enofilo);
-					}
-				}
-			}
-		}
+		
+		List<Enofilo> listaSeguidoresBodega = validarSiEsEnofiloSuscripto(listaSeguidores, event.getBodega());
+		
+		IObservador observerNotificacion = new ServiceNotificacionPush();
+		
+		suscribir(observerNotificacion, listaSeguidoresBodega);
+		
+		notificar();
+		
+		
 		
 	}
 
 	private Iterable<Enofilo> obtenerListaEnofilos() {
 		return enofiloRepository.findAll();
+	}
+	
+	private List<Enofilo> validarSiEsEnofiloSuscripto(Iterable<Enofilo> listaSeguidores, Bodega bodegaSeleccionada) {
+		List<Enofilo> listaSeguidoresBodega = new ArrayList<Enofilo>();
+		
+		for (Enofilo enofilo : listaSeguidores) {
+			for (Siguiendo siguiendo : enofilo.getSeguido()) {
+				if ( siguiendo.sosDeBodega() ) {
+					if (siguiendo.esBodega(bodegaSeleccionada)) {
+						listaSeguidoresBodega.add(enofilo);	
+					}
+				}
+			}
+		}
+		
+		return listaSeguidoresBodega;
+	}
+
+	@Override
+	public void notificar() {
+		for (Enofilo enofilo : listaSeguidores) {
+			observador.enviarNotificacion(enofilo,listaNuevos,listaActualizada);
+		}
+		
+	}
+
+	@Override
+	public void quitar(IObservador observador) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void suscribir(IObservador observador, List<Enofilo> listaSeguidoresBodega) {
+		this.observador = observador;
+		this.listaSeguidores = listaSeguidoresBodega;
 	}
 	
 	
