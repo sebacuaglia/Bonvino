@@ -246,7 +246,7 @@ public class GestorActualizaVinos implements ISujetoNotificacionEnofilo{
 		
 		List<Enofilo> listaSeguidoresBodega = validarSiEsEnofiloSuscripto(listaSeguidores, event.getBodega());
 		
-		IObservador observerNotificacion = new ServiceNotificacionPush();
+		IObservador observerNotificacion = new InterfazNotificadorWpp();
 		
 		suscribir(observerNotificacion, listaSeguidoresBodega);
 		
@@ -264,12 +264,8 @@ public class GestorActualizaVinos implements ISujetoNotificacionEnofilo{
 		List<Enofilo> listaSeguidoresBodega = new ArrayList<Enofilo>();
 		
 		for (Enofilo enofilo : listaSeguidores) {
-			for (Siguiendo siguiendo : enofilo.getSeguido()) {
-				if ( siguiendo.sosDeBodega() ) {
-					if (siguiendo.esBodega(bodegaSeleccionada)) {
-						listaSeguidoresBodega.add(enofilo);	
-					}
-				}
+			if(enofilo.sigueABodega(bodegaSeleccionada)) {
+				listaSeguidoresBodega.add(enofilo);
 			}
 		}
 		

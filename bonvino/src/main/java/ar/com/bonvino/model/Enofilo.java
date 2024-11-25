@@ -29,6 +29,8 @@ public class Enofilo extends ObjetoDB {
 	
 	@ManyToMany(cascade = CascadeType.ALL)
 	private List<Siguiendo> seguido;
+	
+	private String telefono;
 
 	public String getApellido() {
 		return apellido;
@@ -78,8 +80,23 @@ public class Enofilo extends ObjetoDB {
 		this.seguido = seguido;
 	}
 	
-	
-	
-	
+	public String getTelefono() {
+		return telefono;
+	}
+
+	public void setTelefono(String telefono) {
+		this.telefono = telefono;
+	}
+
+	public boolean sigueABodega(Bodega bodegaSeleccionada) {
+		for (Siguiendo siguiendo : this.getSeguido()) {
+			if ( siguiendo.sosDeBodega() ) {
+				if (siguiendo.esBodega(bodegaSeleccionada)) {
+					return true;	
+				}
+			}
+		}
+		return false;
+	}
 	
 }
